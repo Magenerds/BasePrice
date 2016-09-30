@@ -1,0 +1,19 @@
+{
+  "name": "magenerds/module-baseprice",
+  "description": "This module displays base prices",
+  "require": {
+    "php": "~5.5.0|~5.6.0|~7.0.0",
+    "magento/framework": "100.1.*"
+  },
+  "type": "magento2-module",
+  "version": "${release.version}",
+  "license": "proprietary",
+  "autoload": {
+    "files": [
+      "registration.php"
+    ],
+    "psr-4": {
+      "Magenerds\\BasePrice\\": ""
+    }
+  }
+}

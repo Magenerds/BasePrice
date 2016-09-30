@@ -1,0 +1,30 @@
+# Build
+/build
+/build.properties
+/instance-src
+/target
+/output
+
+# Build - SCSS
+.sass-cache
+.sass-build
+.tmp
+
+# NPM / Bower
+node_modules
+bower_components
+
+# Composer
+/vendor
+
+# Eclipse IDE
+/.buildpath
+/.project
+/.settings
+
+# PhpStorm IDE
+/.idea
+
+# Hidden files
+.DS_Store
+._.DS_Store

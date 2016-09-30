@@ -1,0 +1,50 @@
+<?php
+/**
+ * Copyright (c) 2016 TechDivision GmbH
+ * All rights reserved
+ *
+ * This product includes proprietary software developed at TechDivision GmbH, Germany
+ * For more information see http://www.techdivision.com/
+ *
+ * To obtain a valid license for using this software please contact us at
+ * license@techdivision.com
+ */
+
+/**
+ * @category   Magenerds
+ * @package    Magenerds_BasePrice
+ * @subpackage view
+ * @author     Florian Sydekum <f.sydekum@techdivision.com>
+ * @copyright  Copyright (c) 2016 TechDivision GmbH (http://www.techdivision.com)
+ * @version    ${release.version}
+ * @link       http://www.techdivision.com/
+ */
+
+/**
+ * @var $block \Magenerds\BasePrice\Block\AfterPrice
+ */
+?>
+<?php if ($block->isEnabled()): ?>
+    <div class="baseprice">
+        <?php echo $block->getBasePrice() ?>
+    </div>
+    <script type="text/javascript">
+        require(['jquery', 'jquery/ui', 'domReady!'], function($) {
+            $('body').on('updatePrice', function (e, data) {
+                var swatchWidget = $('.swatch-opt').data('mage-SwatchRenderer');
+                var options = _.object(_.keys(swatchWidget.optionsMap), {});
+
+                swatchWidget.element.find('.' + swatchWidget.options.classes.attributeClass + '[option-selected]').each(function () {
+                    options[$(this).attr('attribute-id')] = $(this).attr('option-selected');
+                });
+
+                result = swatchWidget.options.jsonConfig.optionPrices[_.findKey(swatchWidget.options.jsonConfig.index, options)];
+
+                var basePriceField = $('.baseprice');
+                if (typeof result != 'undefined' && result.magenerds_baseprice_text.length && basePriceField.length) {
+                    basePriceField.html(result.magenerds_baseprice_text);
+                }
+            });
+        });
+    </script>
+<?php endif; ?>
