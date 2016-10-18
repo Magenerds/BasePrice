@@ -22,5 +22,11 @@
  */
  -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../../lib/internal/Magento/Framework/Module/etc/module.xsd">
-    <module name="Magenerds_BasePrice" setup_version="1.0.1" />
+    <module name="Magenerds_BasePrice" setup_version="1.0.2">
+        <sequence>
+            <module name="Magento_Catalog"/>
+            <module name="Magento_Eav"/>
+            <module name="Magento_Config"/>
+        </sequence>
+    </module>
 </config>
