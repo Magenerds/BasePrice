@@ -21,7 +21,7 @@
  * @link       http://www.techdivision.com/
  */
  -->
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../../lib/internal/Magento/Framework/ObjectManager/etc/config.xsd">
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     <type name="Magento\Framework\Pricing\Render">
         <plugin name="magenerds_baseprice_priceRender" type="Magenerds\BasePrice\Model\Plugin\AfterPrice" />
     </type>
