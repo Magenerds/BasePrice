@@ -77,7 +77,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             }
         }
 
-        return 0;
+        return 1;
     }
 
     /**
