@@ -87,6 +87,11 @@ class AfterPrice
      */
     public function afterRender(\Magento\Framework\Pricing\Render $subject, $renderHtml)
     {
+        // check if html is empty
+        if ($renderHtml == '' || str_replace("\n", "", $renderHtml) == '') {
+            return $renderHtml;
+        }
+
         return $renderHtml . $this->_getAfterPriceHtml();
     }
 
