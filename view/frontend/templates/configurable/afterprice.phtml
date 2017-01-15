@@ -40,7 +40,7 @@
 
                 result = swatchWidget.options.jsonConfig.optionPrices[_.findKey(swatchWidget.options.jsonConfig.index, options)];
 
-                var basePriceField = $('.baseprice');
+                var basePriceField = $('.product-info-price .baseprice');
                 if (typeof result != 'undefined' && result.magenerds_baseprice_text.length && basePriceField.length) {
                     basePriceField.html(result.magenerds_baseprice_text);
                 }
