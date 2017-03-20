@@ -50,20 +50,28 @@ class InstallData implements InstallDataInterface
     protected $_configResource;
 
     /**
+     * @var \Magento\Eav\Model\Config
+     */
+    protected $_eavConfig;
+
+    /**
      * Constructor
      *
      * @param \Magento\Eav\Setup\EavSetupFactory $eavSetupFactory
      * @param \Magento\Catalog\Api\ProductAttributeOptionManagementInterface $productAttributeOptionManagementInterface
      * @param \Magento\Config\Model\ResourceModel\Config $configResource
+     * @param \Magento\Eav\Model\Config $eavConfig
      */
     public function __construct(
         \Magento\Eav\Setup\EavSetupFactory $eavSetupFactory,
         \Magento\Catalog\Api\ProductAttributeOptionManagementInterface $productAttributeOptionManagementInterface,
-        \Magento\Config\Model\ResourceModel\Config $configResource
+        \Magento\Config\Model\ResourceModel\Config $configResource,
+        \Magento\Eav\Model\Config $eavConfig
     ){
         $this->_eavSetupFactory = $eavSetupFactory;
         $this->_productAttributeOptionManagementInterface = $productAttributeOptionManagementInterface;
         $this->_configResource = $configResource;
+        $this->_eavConfig = $eavConfig;
     }
 
     /**
@@ -153,6 +161,8 @@ class InstallData implements InstallDataInterface
             ]);
         }
 
+        // clean cache so that newly created attributes will be loaded from database
+        $this->_eavConfig->clear();
         $this->_setSystemConfiguration();
     }
 
