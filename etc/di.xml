@@ -28,4 +28,5 @@
     <type name="Magento\ConfigurableProduct\Block\Product\View\Type\Configurable">
         <plugin name="magenerds_baseprice_configurablePriceRender" type="Magenerds\BasePrice\Model\Plugin\ConfigurablePrice" />
     </type>
+    <preference for="Magento\GroupedProduct\Model\Product\Type\Grouped" type="Magenerds\BasePrice\Model\Plugin\Grouped"/>
 </config>

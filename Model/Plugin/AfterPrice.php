@@ -108,6 +108,13 @@ class AfterPrice
         // check if product is available
         if (!$product) return '';
 
+        // if a grouped product is given we need the current child
+        if ($product->getTypeId() == 'grouped') {
+            $product = $product->getPriceInfo()
+                ->getPrice(\Magento\Catalog\Pricing\Price\FinalPrice::PRICE_CODE)
+                ->getMinProduct();
+        }
+
         // check if price for current product has been rendered before
         if (!array_key_exists($product->getId(), $this->_afterPriceHtml)) {
             $afterPriceBlock = $this->_layout->createBlock(
@@ -115,11 +122,14 @@ class AfterPrice
                 'baseprice_afterprice_' . $product->getId(),
                 ['product' => $product]
             );
+
+            // use different templates for configurables and other product types
             if ($product->getTypeId() == 'configurable') {
                 $templateFile = 'Magenerds_BasePrice::configurable/afterprice.phtml';
             } else {
                 $templateFile = 'Magenerds_BasePrice::afterprice.phtml';
             }
+
             $afterPriceBlock->setTemplate($templateFile);
             $this->_afterPriceHtml[$product->getId()] = $afterPriceBlock->toHtml();
         }
