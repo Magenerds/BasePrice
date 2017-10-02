@@ -14,6 +14,7 @@
  * @copyright  Copyright (c) 2017 TechDivision GmbH (http://www.techdivision.com)
  * @link       http://www.techdivision.com/
  * @author     Florian Sydekum <f.sydekum@techdivision.com>
+ * @author     Jürgen "Atlan" Schuch <juergen@atmage.de>
  */
 namespace Magenerds\BasePrice\Setup;
 
@@ -21,6 +22,8 @@ use Magento\Eav\Setup\EavSetup;
 use Magento\Framework\Setup\InstallDataInterface;
 use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Framework\Setup\ModuleContextInterface;
+use Magento\Framework\App\ObjectManager;
+use Magento\Framework\Serialize\Serializer\Json;
 
 /**
  * Class InstallData
@@ -265,10 +268,20 @@ class InstallData implements InstallDataInterface
             }
         }
 
+        $objectManager = ObjectManager::getInstance();
+        $productMetadata = $objectManager->get('Magento\Framework\App\ProductMetadataInterface');
+        $version = $productMetadata->getVersion();
+
+        if($version < 2.2) {
+            $serializedData = serialize($data);
+        } else {
+            $serializedData = $objectManager->get(Json::class)->serialize($data);
+        }
+
         // save system configuration
         $this->_configResource->saveConfig(
             \Magenerds\BasePrice\Helper\Data::CONVERSION_CONFIG_PATH,
-            serialize($data),
+            $serializedData,
             \Magento\Framework\App\Config\ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
             0
         );
