@@ -126,6 +126,10 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     public function getBasePrice(\Magento\Catalog\Model\Product $product)
     {
         $productPrice = $product->getFinalPrice();
+        
+        if ($product->getTypeId() == "configurable")
+            $productPrice = $product->getPriceInfo()->getPrice('final_price')->getValue();
+
         $conversion = $this->getConversion($product);
         $referenceAmount = $product->getData('baseprice_reference_amount');
         $productAmount = $product->getData('baseprice_product_amount');
