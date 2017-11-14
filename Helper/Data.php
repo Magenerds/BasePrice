@@ -14,8 +14,12 @@
  * @copyright  Copyright (c) 2017 TechDivision GmbH (http://www.techdivision.com)
  * @link       http://www.techdivision.com/
  * @author     Florian Sydekum <f.sydekum@techdivision.com>
+ * @author     Jürgen "Atlan" Schuch <juergen@atmage.de>
  */
 namespace Magenerds\BasePrice\Helper;
+
+use Magento\Framework\App\ObjectManager;
+use Magento\Framework\Serialize\Serializer\Json;
 
 /**
  * Class Data
@@ -58,10 +62,20 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $productUnit = $product->getData('baseprice_product_unit');
         $referenceUnit = $product->getData('baseprice_reference_unit');
 
-        $configArray = unserialize($this->scopeConfig->getValue(
+        $scopeConfig = $this->scopeConfig->getValue(
             self::CONVERSION_CONFIG_PATH,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE
-        ));
+        );
+
+        $objectManager = ObjectManager::getInstance();
+        $productMetadata = $objectManager->get('Magento\Framework\App\ProductMetadataInterface');
+        $version = $productMetadata->getVersion();
+        $objectManager->get('Psr\Log\LoggerInterface')->info('Version('.var_export($version,true).')');
+        if($version < 2.2) {
+            $configArray = unserialize($scopeConfig);
+        } else {
+            $configArray = $objectManager->get(Json::class)->unserialize($scopeConfig);
+        }
 
         foreach ($configArray as $config) {
             if ($config['product_unit'] == $productUnit
