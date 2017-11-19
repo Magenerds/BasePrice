@@ -17,11 +17,18 @@
  */
 namespace Magenerds\BasePrice\Helper;
 
+use Magento\Catalog\Model\Product;
+use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Framework\App\Helper\Context;
+use Magento\Framework\Pricing\Helper\Data as PriceHelper;
+use Magento\Store\Model\ScopeInterface;
+use Magento\Framework\Serialize\SerializerInterface;
+
 /**
  * Class Data
  * @package Magenerds\BasePrice\Helper
  */
-class Data extends \Magento\Framework\App\Helper\AbstractHelper
+class Data extends AbstractHelper
 {
     /**
      * Holds the configuration path for conversion mapping
@@ -29,28 +36,37 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     const CONVERSION_CONFIG_PATH = 'baseprice/general/conversion';
 
     /**
-     * @var \Magento\Framework\Pricing\Helper\Data
+     * @var PriceHelper
      */
-    protected $_priceHelper;
+    protected $priceHelper;
+
+    /**
+     * @var SerializerInterface
+     */
+    protected $serializer;
 
     /**
      * Constructor
      *
-     * @param \Magento\Framework\App\Helper\Context $context
-     * @param \Magento\Framework\Pricing\Helper\Data $priceHelper
+     * @param Context $context
+     * @param PriceHelper $priceHelper
+     * @param SerializerInterface $serializer
      */
     public function __construct(
-        \Magento\Framework\App\Helper\Context $context,
-        \Magento\Framework\Pricing\Helper\Data $priceHelper
+        Context $context,
+        PriceHelper $priceHelper,
+        SerializerInterface $serializer
     ){
-        $this->_priceHelper = $priceHelper;
+        $this->priceHelper = $priceHelper;
+        $this->serializer = $serializer;
+
         parent::__construct($context);
     }
 
     /**
      * Returns the configured conversion rate
      *
-     * @param $product \Magento\Catalog\Model\Product
+     * @param $product Product
      * @return int
      */
     public function getConversion($product)
@@ -58,9 +74,9 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $productUnit = $product->getData('baseprice_product_unit');
         $referenceUnit = $product->getData('baseprice_reference_unit');
 
-        $configArray = unserialize($this->scopeConfig->getValue(
+        $configArray = $this->serializer->unserialize($this->scopeConfig->getValue(
             self::CONVERSION_CONFIG_PATH,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+            ScopeInterface::SCOPE_STORE
         ));
 
         foreach ($configArray as $config) {
@@ -77,14 +93,14 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     /**
      * Returns the base price text according to the configured template
      *
-     * @param \Magento\Catalog\Model\Product $product
+     * @param Product $product
      * @return mixed
      */
-    public function getBasePriceText(\Magento\Catalog\Model\Product $product)
+    public function getBasePriceText(Product $product)
     {
         $template = $this->scopeConfig->getValue(
             'baseprice/general/template',
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+            ScopeInterface::SCOPE_STORE
         );
 
         $basePrice = $this->getBasePrice($product);
@@ -94,7 +110,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         return str_replace(
             '{REF_UNIT}', $this->getReferenceUnit($product), str_replace(
             '{REF_AMOUNT}', $this->getReferenceAmount($product), str_replace(
-            '{BASE_PRICE}', $this->_priceHelper->currency($basePrice), $template)
+                '{BASE_PRICE}', $this->priceHelper->currency($basePrice), $template)
         ));
     }
 
@@ -103,7 +119,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      *
      * @return string
      */
-    public function getReferenceUnit(\Magento\Catalog\Model\Product $product)
+    public function getReferenceUnit(Product $product)
     {
         return $product->getAttributeText('baseprice_reference_unit');
     }
@@ -113,7 +129,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      *
      * @return float
      */
-    public function getReferenceAmount(\Magento\Catalog\Model\Product $product)
+    public function getReferenceAmount(Product $product)
     {
         return round($product->getData('baseprice_reference_amount'), 2);
     }
@@ -123,7 +139,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      *
      * @return float|string
      */
-    public function getBasePrice(\Magento\Catalog\Model\Product $product)
+    public function getBasePrice(Product $product)
     {
         $productPrice = $product->getFinalPrice();
         $conversion = $this->getConversion($product);

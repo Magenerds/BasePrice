@@ -26,7 +26,7 @@ use Magento\Eav\Model\Entity\Attribute\ScopedAttributeInterface;
 use Magento\Eav\Setup\EavSetup;
 use Magento\Eav\Setup\EavSetupFactory;
 use Magento\Framework\App\Config\ScopeConfigInterface;
-use Magento\Framework\Serialize\Serializer\Json;
+use Magento\Framework\Serialize\SerializerInterface;
 use Magento\Framework\Setup\InstallDataInterface;
 use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Framework\Setup\ModuleContextInterface;
@@ -58,7 +58,7 @@ class InstallData implements InstallDataInterface
     protected $eavConfig;
 
     /**
-     * @var Json
+     * @var SerializerInterface
      */
     protected $serializer;
 
@@ -69,13 +69,14 @@ class InstallData implements InstallDataInterface
      * @param ProductAttributeOptionManagementInterface $productAttributeOptionManagementInterface
      * @param ResourceConfig $configResource
      * @param Config $eavConfig
+     * @param SerializerInterface $serializer
      */
     public function __construct(
         EavSetupFactory $eavSetupFactory,
         ProductAttributeOptionManagementInterface $productAttributeOptionManagementInterface,
         ResourceConfig $configResource,
         Config $eavConfig,
-        Json $serializer
+        SerializerInterface $serializer
     ){
         $this->eavSetupFactory = $eavSetupFactory;
         $this->productAttributeOptionManagementInterface = $productAttributeOptionManagementInterface;
