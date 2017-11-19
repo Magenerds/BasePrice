@@ -17,6 +17,11 @@
  */
 namespace Magenerds\BasePrice\Model\Plugin;
 
+use Magento\Catalog\Pricing\Price\FinalPrice;
+use Magento\Framework\Pricing\Render;
+use Magento\Framework\Pricing\SaleableInterface;
+use Magento\Framework\View\LayoutInterface;
+
 /**
  * Class AfterPrice
  * @package Magenerds\BasePrice\Model\Plugin
@@ -24,69 +29,46 @@ namespace Magenerds\BasePrice\Model\Plugin;
 class AfterPrice
 {
     /**
-     * Holds the registry key for the product
+     * Holds the tier price key
      */
-    const PRODUCT_REGISTRY_KEY = 'magenerds_baseprice_product';
+    const TIER_PRICE_KEY = 'tier_price';
 
     /**
-     * @var \Magento\Framework\View\LayoutInterface
+     * @var LayoutInterface
      */
-    protected $_layout;
+    protected $layout;
 
     /**
-     * @var \Magento\Framework\Registry|null
+     * @var []
      */
-    protected $_coreRegistry = null;
+    protected $afterPriceHtml = [];
 
     /**
-     * @var array
-     */
-    protected $_afterPriceHtml = [];
-
-    /**
-     * @param \Magento\Framework\View\LayoutInterface $layout
-     * @param \Magento\Framework\Registry $registry
+     * @param LayoutInterface $layout
      */
     public function __construct(
-        \Magento\Framework\View\LayoutInterface $layout,
-        \Magento\Framework\Registry $registry
+        LayoutInterface $layout
     ){
-        $this->_layout = $layout;
-        $this->_coreRegistry = $registry;
-    }
-
-    /**
-     * Plugin in order to get the current product for price rendering
-     *
-     * @param \Magento\Framework\Pricing\Render $subject
-     * @param $renderHtml
-     * @return string
-     */
-    public function beforeRender(
-        \Magento\Framework\Pricing\Render $subject,
-        $priceCode,
-        \Magento\Catalog\Model\Product $saleableItem,
-        array $arguments = []
-    ){
-        $this->_coreRegistry->unregister(self::PRODUCT_REGISTRY_KEY);
-        $this->_coreRegistry->register(self::PRODUCT_REGISTRY_KEY, $saleableItem);
+        $this->layout = $layout;
     }
 
     /**
      * Plugin for price rendering in order to display after price information
      *
-     * @param \Magento\Framework\Pricing\Render $subject
+     * @param Render $subject
      * @param $renderHtml string
      * @return string
      */
-    public function afterRender(\Magento\Framework\Pricing\Render $subject, $renderHtml)
+    public function aroundRender(Render $subject, callable $proceed, $priceCode, SaleableInterface $saleableItem, array $arguments = [])
     {
-        // check if html is empty
-        if ($renderHtml == '' || str_replace("\n", "", $renderHtml) == '') {
-            return $renderHtml;
+        $renderHtml = $proceed($priceCode, $saleableItem, $arguments);
+
+        // we decided to skip tier prices, read why: https://github.com/Magenerds/BasePrice/issues/15
+        if ($priceCode != self::TIER_PRICE_KEY){
+            $renderHtml .= $this->getAfterPriceHtml($saleableItem);
         }
 
-        return $renderHtml . $this->_getAfterPriceHtml();
+        return $renderHtml;
     }
 
     /**
@@ -94,24 +76,21 @@ class AfterPrice
      *
      * @return null|string
      */
-    protected function _getAfterPriceHtml()
+    protected function getAfterPriceHtml(SaleableInterface $product)
     {
-        /** @var $product \Magento\Catalog\Model\Product */
-        $product = $this->_coreRegistry->registry(self::PRODUCT_REGISTRY_KEY);
-
         // check if product is available
         if (!$product) return '';
 
         // if a grouped product is given we need the current child
         if ($product->getTypeId() == 'grouped') {
             $product = $product->getPriceInfo()
-                ->getPrice(\Magento\Catalog\Pricing\Price\FinalPrice::PRICE_CODE)
+                ->getPrice(FinalPrice::PRICE_CODE)
                 ->getMinProduct();
         }
 
         // check if price for current product has been rendered before
-        if (!array_key_exists($product->getId(), $this->_afterPriceHtml)) {
-            $afterPriceBlock = $this->_layout->createBlock(
+        if (!array_key_exists($product->getId(), $this->afterPriceHtml)) {
+            $afterPriceBlock = $this->layout->createBlock(
                 'Magenerds\BasePrice\Block\AfterPrice',
                 'baseprice_afterprice_' . $product->getId(),
                 ['product' => $product]
@@ -125,9 +104,9 @@ class AfterPrice
             }
 
             $afterPriceBlock->setTemplate($templateFile);
-            $this->_afterPriceHtml[$product->getId()] = $afterPriceBlock->toHtml();
+            $this->afterPriceHtml[$product->getId()] = $afterPriceBlock->toHtml();
         }
 
-        return $this->_afterPriceHtml[$product->getId()];
+        return $this->afterPriceHtml[$product->getId()];
     }
 }
