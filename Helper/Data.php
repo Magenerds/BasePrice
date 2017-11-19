@@ -21,6 +21,7 @@ use Magento\Catalog\Model\Product;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Pricing\Helper\Data as PriceHelper;
+use Magento\Framework\Pricing\PriceCurrencyInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Framework\Serialize\SerializerInterface;
 
@@ -141,7 +142,7 @@ class Data extends AbstractHelper
      */
     public function getBasePrice(Product $product)
     {
-        $productPrice = $product->getFinalPrice();
+        $productPrice = round($product->getPriceInfo()->getPrice('final_price')->getAmount()->getValue(), PriceCurrencyInterface::DEFAULT_PRECISION);
         $conversion = $this->getConversion($product);
         $referenceAmount = $product->getData('baseprice_reference_amount');
         $productAmount = $product->getData('baseprice_product_amount');
