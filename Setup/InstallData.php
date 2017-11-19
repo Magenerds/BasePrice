@@ -17,7 +17,16 @@
  */
 namespace Magenerds\BasePrice\Setup;
 
+use Magenerds\BasePrice\Helper\Data;
+use Magento\Catalog\Api\ProductAttributeOptionManagementInterface;
+use Magento\Catalog\Model\Product;
+use Magento\Config\Model\ResourceModel\Config as ResourceConfig;
+use Magento\Eav\Model\Config;
+use Magento\Eav\Model\Entity\Attribute\ScopedAttributeInterface;
 use Magento\Eav\Setup\EavSetup;
+use Magento\Eav\Setup\EavSetupFactory;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Framework\Setup\InstallDataInterface;
 use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Framework\Setup\ModuleContextInterface;
@@ -29,43 +38,50 @@ use Magento\Framework\Setup\ModuleContextInterface;
 class InstallData implements InstallDataInterface
 {
     /**
-     * @var \Magento\Eav\Setup\EavSetupFactory
+     * @var EavSetupFactory
      */
-    protected $_eavSetupFactory;
+    protected $eavSetupFactory;
 
     /**
-     * @var \Magento\Catalog\Api\ProductAttributeOptionManagementInterface
+     * @var ProductAttributeOptionManagementInterface
      */
-    protected $_productAttributeOptionManagementInterface;
+    protected $productAttributeOptionManagementInterface;
 
     /**
-     * @var \Magento\Config\Model\ResourceModel\Config
+     * @var ResourceConfig
      */
-    protected $_configResource;
+    protected $configResource;
 
     /**
-     * @var \Magento\Eav\Model\Config
+     * @var Config
      */
-    protected $_eavConfig;
+    protected $eavConfig;
+
+    /**
+     * @var Json
+     */
+    protected $serializer;
 
     /**
      * Constructor
      *
-     * @param \Magento\Eav\Setup\EavSetupFactory $eavSetupFactory
-     * @param \Magento\Catalog\Api\ProductAttributeOptionManagementInterface $productAttributeOptionManagementInterface
-     * @param \Magento\Config\Model\ResourceModel\Config $configResource
-     * @param \Magento\Eav\Model\Config $eavConfig
+     * @param EavSetupFactory $eavSetupFactory
+     * @param ProductAttributeOptionManagementInterface $productAttributeOptionManagementInterface
+     * @param ResourceConfig $configResource
+     * @param Config $eavConfig
      */
     public function __construct(
-        \Magento\Eav\Setup\EavSetupFactory $eavSetupFactory,
-        \Magento\Catalog\Api\ProductAttributeOptionManagementInterface $productAttributeOptionManagementInterface,
-        \Magento\Config\Model\ResourceModel\Config $configResource,
-        \Magento\Eav\Model\Config $eavConfig
+        EavSetupFactory $eavSetupFactory,
+        ProductAttributeOptionManagementInterface $productAttributeOptionManagementInterface,
+        ResourceConfig $configResource,
+        Config $eavConfig,
+        Json $serializer
     ){
-        $this->_eavSetupFactory = $eavSetupFactory;
-        $this->_productAttributeOptionManagementInterface = $productAttributeOptionManagementInterface;
-        $this->_configResource = $configResource;
-        $this->_eavConfig = $eavConfig;
+        $this->eavSetupFactory = $eavSetupFactory;
+        $this->productAttributeOptionManagementInterface = $productAttributeOptionManagementInterface;
+        $this->configResource = $configResource;
+        $this->eavConfig = $eavConfig;
+        $this->serializer = $serializer;
     }
 
     /**
@@ -75,10 +91,10 @@ class InstallData implements InstallDataInterface
     public function install(ModuleDataSetupInterface $setup, ModuleContextInterface $context)
     {
         /** @var $eavSetup EavSetup */
-        $eavSetup = $this->_eavSetupFactory->create(['setup' => $setup]);
+        $eavSetup = $this->eavSetupFactory->create(['setup' => $setup]);
 
         $eavSetup->addAttribute(
-            \Magento\Catalog\Model\Product::ENTITY,
+            Product::ENTITY,
             'baseprice_product_amount',
             [
                 'type' => 'decimal',
@@ -88,7 +104,7 @@ class InstallData implements InstallDataInterface
                 'sort_order' => 1,
                 'visible' => true,
                 'note' => 'Leave empty to disable baseprice for this product',
-                'global' => \Magento\Eav\Model\Entity\Attribute\ScopedAttributeInterface::SCOPE_GLOBAL,
+                'global' => ScopedAttributeInterface::SCOPE_GLOBAL,
                 'group' => 'Base Price',
                 'used_in_product_listing' => true,
                 'visible_on_front' => false
@@ -96,7 +112,7 @@ class InstallData implements InstallDataInterface
         );
 
         $eavSetup->addAttribute(
-            \Magento\Catalog\Model\Product::ENTITY,
+            Product::ENTITY,
             'baseprice_product_unit',
             [
                 'type' => 'varchar',
@@ -105,7 +121,7 @@ class InstallData implements InstallDataInterface
                 'required' => false,
                 'sort_order' => 2,
                 'visible' => true,
-                'global' => \Magento\Eav\Model\Entity\Attribute\ScopedAttributeInterface::SCOPE_GLOBAL,
+                'global' => ScopedAttributeInterface::SCOPE_GLOBAL,
                 'group' => 'Base Price',
                 'used_in_product_listing' => true,
                 'visible_on_front' => false
@@ -113,7 +129,7 @@ class InstallData implements InstallDataInterface
         );
 
         $eavSetup->addAttribute(
-            \Magento\Catalog\Model\Product::ENTITY,
+            Product::ENTITY,
             'baseprice_reference_amount',
             [
                 'type' => 'decimal',
@@ -122,7 +138,7 @@ class InstallData implements InstallDataInterface
                 'required' => false,
                 'sort_order' => 3,
                 'visible' => true,
-                'global' => \Magento\Eav\Model\Entity\Attribute\ScopedAttributeInterface::SCOPE_GLOBAL,
+                'global' => ScopedAttributeInterface::SCOPE_GLOBAL,
                 'group' => 'Base Price',
                 'used_in_product_listing' => true,
                 'visible_on_front' => false
@@ -130,7 +146,7 @@ class InstallData implements InstallDataInterface
         );
 
         $eavSetup->addAttribute(
-            \Magento\Catalog\Model\Product::ENTITY,
+            Product::ENTITY,
             'baseprice_reference_unit',
             [
                 'type' => 'varchar',
@@ -139,7 +155,7 @@ class InstallData implements InstallDataInterface
                 'required' => false,
                 'sort_order' => 4,
                 'visible' => true,
-                'global' => \Magento\Eav\Model\Entity\Attribute\ScopedAttributeInterface::SCOPE_GLOBAL,
+                'global' => ScopedAttributeInterface::SCOPE_GLOBAL,
                 'group' => 'Base Price',
                 'used_in_product_listing' => true,
                 'visible_on_front' => false
@@ -147,7 +163,7 @@ class InstallData implements InstallDataInterface
         );
 
         foreach (['baseprice_product_unit', 'baseprice_reference_unit'] as $attributeCode) {
-            $attributeId = $eavSetup->getAttribute(\Magento\Catalog\Model\Product::ENTITY, $attributeCode, 'attribute_id');
+            $attributeId = $eavSetup->getAttribute(Product::ENTITY, $attributeCode, 'attribute_id');
 
             $eavSetup->addAttributeOption([
                 'attribute_id' => $attributeId,
@@ -156,14 +172,14 @@ class InstallData implements InstallDataInterface
         }
 
         // clean cache so that newly created attributes will be loaded from database
-        $this->_eavConfig->clear();
-        $this->_setSystemConfiguration();
+        $this->eavConfig->clear();
+        $this->setSystemConfiguration();
     }
 
     /**
      * Sets up the conversations for default units
      */
-    protected function _setSystemConfiguration()
+    protected function setSystemConfiguration()
     {
         // holds the conversion rates
         $dataTemplate = [
@@ -243,13 +259,13 @@ class InstallData implements InstallDataInterface
 
         // get all attribute options for product unit
         $productUnitOptions = [];
-        foreach ($this->_productAttributeOptionManagementInterface->getItems('baseprice_product_unit') as $option) {
+        foreach ($this->productAttributeOptionManagementInterface->getItems('baseprice_product_unit') as $option) {
             $productUnitOptions[$option->getLabel()] = $option->getValue();
         }
 
         // get all attribute options for reference unit
         $referenceUnitOptions = [];
-        foreach ($this->_productAttributeOptionManagementInterface->getItems('baseprice_reference_unit') as $option) {
+        foreach ($this->productAttributeOptionManagementInterface->getItems('baseprice_reference_unit') as $option) {
             $referenceUnitOptions[$option->getLabel()] = $option->getValue();
         }
 
@@ -266,10 +282,10 @@ class InstallData implements InstallDataInterface
         }
 
         // save system configuration
-        $this->_configResource->saveConfig(
-            \Magenerds\BasePrice\Helper\Data::CONVERSION_CONFIG_PATH,
-            serialize($data),
-            \Magento\Framework\App\Config\ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
+        $this->configResource->saveConfig(
+            Data::CONVERSION_CONFIG_PATH,
+            $this->serializer->serialize($data),
+            ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
             0
         );
     }
