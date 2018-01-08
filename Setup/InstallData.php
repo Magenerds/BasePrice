@@ -49,6 +49,11 @@ class InstallData implements InstallDataInterface
     protected $_eavConfig;
 
     /**
+     * @var \Magento\Framework\Serialize\SerializerInterface
+     */
+    private $_serializer;
+
+    /**
      * Constructor
      *
      * @param \Magento\Eav\Setup\EavSetupFactory $eavSetupFactory
@@ -60,12 +65,14 @@ class InstallData implements InstallDataInterface
         \Magento\Eav\Setup\EavSetupFactory $eavSetupFactory,
         \Magento\Catalog\Api\ProductAttributeOptionManagementInterface $productAttributeOptionManagementInterface,
         \Magento\Config\Model\ResourceModel\Config $configResource,
-        \Magento\Eav\Model\Config $eavConfig
+        \Magento\Eav\Model\Config $eavConfig,
+        \Magento\Framework\Serialize\SerializerInterface $serializer
     ){
         $this->_eavSetupFactory = $eavSetupFactory;
         $this->_productAttributeOptionManagementInterface = $productAttributeOptionManagementInterface;
         $this->_configResource = $configResource;
         $this->_eavConfig = $eavConfig;
+        $this->_serializer = $serializer;
     }
 
     /**
@@ -268,7 +275,7 @@ class InstallData implements InstallDataInterface
         // save system configuration
         $this->_configResource->saveConfig(
             \Magenerds\BasePrice\Helper\Data::CONVERSION_CONFIG_PATH,
-            serialize($data),
+            $this->_serializer->serialize($data),
             \Magento\Framework\App\Config\ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
             0
         );

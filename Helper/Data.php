@@ -34,6 +34,11 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     protected $_priceHelper;
 
     /**
+     * @var \Magento\Framework\Serialize\SerializerInterface
+     */
+    private $_serializer;
+
+    /**
      * Constructor
      *
      * @param \Magento\Framework\App\Helper\Context $context
@@ -41,9 +46,11 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
-        \Magento\Framework\Pricing\Helper\Data $priceHelper
+        \Magento\Framework\Pricing\Helper\Data $priceHelper,
+        \Magento\Framework\Serialize\SerializerInterface $serializer
     ){
         $this->_priceHelper = $priceHelper;
+        $this->_serializer = $serializer;
         parent::__construct($context);
     }
 
@@ -58,7 +65,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         $productUnit = $product->getData('baseprice_product_unit');
         $referenceUnit = $product->getData('baseprice_reference_unit');
 
-        $configArray = unserialize($this->scopeConfig->getValue(
+        $configArray = $this->_serializer->unserialize($this->scopeConfig->getValue(
             self::CONVERSION_CONFIG_PATH,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE
         ));
