@@ -29,9 +29,18 @@ use Magento\Framework\View\LayoutInterface;
 class AfterPrice
 {
     /**
-     * Holds the tier price key
+     * Hold final price code
+     *
+     * @var string
      */
-    const TIER_PRICE_KEY = 'tier_price';
+    const FINAL_PRICE = 'final_price';
+
+    /**
+     * Hold tier price code
+     *
+     * @var string
+     */
+    const TIER_PRICE = 'tier_price';
 
     /**
      * @var LayoutInterface
@@ -59,13 +68,24 @@ class AfterPrice
      * @param $renderHtml string
      * @return string
      */
-    public function aroundRender(Render $subject, callable $proceed, $priceCode, SaleableInterface $saleableItem, array $arguments = [])
+    public function aroundRender(Render $subject, \Closure $closure, ...$params)
     {
-        $renderHtml = $proceed($priceCode, $saleableItem, $arguments);
+        // run default render first
+        $renderHtml = $closure(...$params);
 
-        // we decided to skip tier prices, read why: https://github.com/Magenerds/BasePrice/issues/15
-        if ($priceCode != self::TIER_PRICE_KEY){
-            $renderHtml .= $this->getAfterPriceHtml($saleableItem);
+        try{
+            // Get Price Code and Product
+            list($priceCode, $productInterceptor) = $params;
+            $emptyTierPrices = empty($productInterceptor->getTierPrice());
+
+            // If it is final price block and no tier prices exist set additional render
+            // If it is tier price block and tier prices exist set additional render
+            if ((static::FINAL_PRICE === $priceCode && $emptyTierPrices) || (static::TIER_PRICE === $priceCode && !$emptyTierPrices)) {
+                $renderHtml .= $this->_getAfterPriceHtml();
+            }
+        } catch (\Exception $ex) {
+            // if an error occurs, just render the default since it is preallocated
+            return $renderHtml;
         }
 
         return $renderHtml;
