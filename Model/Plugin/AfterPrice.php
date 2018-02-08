@@ -81,7 +81,7 @@ class AfterPrice
             // If it is final price block and no tier prices exist set additional render
             // If it is tier price block and tier prices exist set additional render
             if ((static::FINAL_PRICE === $priceCode && $emptyTierPrices) || (static::TIER_PRICE === $priceCode && !$emptyTierPrices)) {
-                $renderHtml .= $this->_getAfterPriceHtml();
+                $renderHtml .= $this->getAfterPriceHtml();
             }
         } catch (\Exception $ex) {
             // if an error occurs, just render the default since it is preallocated
