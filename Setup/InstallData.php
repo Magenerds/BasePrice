@@ -201,7 +201,7 @@ class InstallData implements InstallDataInterface
                 ],
                 [
                     'reference_unit' => 'mg',
-                    'conversion_rate' => '0.000001'
+                    'conversion_rate' => '0.001'
                 ]
             ],
             'mg' => [
@@ -229,17 +229,17 @@ class InstallData implements InstallDataInterface
             'm' => [
                 [
                     'reference_unit' => 'cm',
-                    'conversion_rate' => '0.001'
+                    'conversion_rate' => '0.01'
                 ],
                 [
                     'reference_unit' => 'mm',
-                    'conversion_rate' => '0.000001'
+                    'conversion_rate' => '0.001'
                 ]
             ],
             'cm' => [
                 [
                     'reference_unit' => 'm',
-                    'conversion_rate' => '1000'
+                    'conversion_rate' => '100'
                 ],
                 [
                     'reference_unit' => 'mm',
@@ -249,11 +249,11 @@ class InstallData implements InstallDataInterface
             'mm' => [
                 [
                     'reference_unit' => 'm',
-                    'conversion_rate' => '1000000'
+                    'conversion_rate' => '1000'
                 ],
                 [
                     'reference_unit' => 'cm',
-                    'conversion_rate' => '1000'
+                    'conversion_rate' => '10'
                 ]
             ],
         ];
