@@ -148,7 +148,7 @@ class Data extends AbstractHelper
         $productAmount = $product->getData('baseprice_product_amount');
 
         $basePrice = 0;
-        if ($productPrice && $conversion && $referenceAmount && $productAmount) {
+        if ($productPrice && $conversion && $referenceAmount && $productAmount && $productAmount > 0) {
             $basePrice = $productPrice * $conversion * $referenceAmount / $productAmount;
         }
 
