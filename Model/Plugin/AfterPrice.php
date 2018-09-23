@@ -106,6 +106,9 @@ class AfterPrice
             $product = $product->getPriceInfo()
                 ->getPrice(FinalPrice::PRICE_CODE)
                 ->getMinProduct();
+
+            // check if we found a product
+            if (!$product) return '';
         }
 
         // check if price for current product has been rendered before
