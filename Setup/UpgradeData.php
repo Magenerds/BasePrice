@@ -18,6 +18,8 @@ namespace Magenerds\BasePrice\Setup;
 
 
 use Magenerds\BasePrice\Helper\Data;
+use Magento\Eav\Api\AttributeRepositoryInterface;
+use Magento\Eav\Model\Config as EavConfig;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Catalog\Api\ProductAttributeOptionManagementInterface;
 use Magento\Catalog\Model\Product;
@@ -31,6 +33,8 @@ use Magento\Eav\Setup\EavSetupFactory;
 class UpgradeData implements UpgradeDataInterface
 {
     const UNIT_ATTRIBUTE_CODES = ['baseprice_product_unit', 'baseprice_reference_unit'];
+
+    const OPTIONS_SORT_ORDER = ['kg', 'g', 'mg', 'l', 'ml', 'km', 'm', 'cm', 'mm', 'qm', 'cbm', 'pc'];
 
     /**
      * Conversion rates from InstallData.
@@ -137,6 +141,17 @@ class UpgradeData implements UpgradeDataInterface
      */
     private $scopeConfig;
 
+    /**
+     * @var EavConfig
+     */
+    private $eavConfig;
+
+    /**
+     * @var AttributeRepositoryInterface
+     */
+    private $attributeRepository;
+
+
     public function __construct(
         EavSetupFactory $eavSetupFactory,
         ProductAttributeOptionManagementInterface $productAttributeOptionManagementInterface,
@@ -212,6 +227,7 @@ class UpgradeData implements UpgradeDataInterface
             $this->addOption($eavSetup, $options);
             $this->eavConfig->clear();
             $this->addToSystemConfiguration($dataTemplate);
+            $this->sortOptions($setup);
         }
         $setup->endSetup();
     }
@@ -280,5 +296,37 @@ class UpgradeData implements UpgradeDataInterface
             ScopeConfigInterface::SCOPE_TYPE_DEFAULT,
             0
         );
+    }
+
+    /**
+     * Sort options of the attribute(s) based on self::OPTIONS_SORT_ORDER
+     *
+     * @param ModuleDataSetupInterface $setup
+     * @param array $attributes
+     *
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     */
+    public function sortOptions(ModuleDataSetupInterface $setup, array $attributes = [])
+    {
+        if (empty($attributes)) {
+            $attributes = self::UNIT_ATTRIBUTE_CODES;
+        }
+
+        //iterate through given attribute_codes
+        foreach ($attributes as $attributeCode) {
+            $attribute = $this->attributeRepository->get(Product::ENTITY, $attributeCode);
+
+            //iterate through options
+            foreach ($attribute->getOptions() as $option) {
+                //get sort order based on options label
+                $sortOrder = array_search($option->getLabel(), self::OPTIONS_SORT_ORDER);
+                $table = $setup->getTable('eav_attribute_option');
+                $optionId = $attribute->getSource()->getOptionId($option->getValue());
+
+                if ($optionId != '' && ! is_null($optionId)) {
+                    $setup->getConnection()->update($table, ['sort_order' => $sortOrder], 'option_id=' . $optionId);
+                }
+            }
+        }
     }
 }
