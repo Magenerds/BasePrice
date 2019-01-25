@@ -33,6 +33,86 @@ class UpgradeData implements UpgradeDataInterface
     const UNIT_ATTRIBUTE_CODES = ['baseprice_product_unit', 'baseprice_reference_unit'];
 
     /**
+     * Conversion rates from InstallData.
+     * Used to add all conversion rates when first installing the module.
+     * @see \Magenerds\BasePrice\Setup\InstallData::setSystemConfiguration()
+     */
+    const DEFAULT_DATA_TEMPLATE = [
+            'kg' => [
+                [
+                    'reference_unit' => 'g',
+                    'conversion_rate' => '0.001'
+                ],
+                [
+                    'reference_unit' => 'mg',
+                    'conversion_rate' => '0.000001'
+                ]
+            ],
+            'g' => [
+                [
+                    'reference_unit' => 'kg',
+                    'conversion_rate' => '1000'
+                ],
+                [
+                    'reference_unit' => 'mg',
+                    'conversion_rate' => '0.001'
+                ]
+            ],
+            'mg' => [
+                [
+                    'reference_unit' => 'kg',
+                    'conversion_rate' => '1000000'
+                ],
+                [
+                    'reference_unit' => 'g',
+                    'conversion_rate' => '1000'
+                ]
+            ],
+            'l' => [
+                [
+                    'reference_unit' => 'ml',
+                    'conversion_rate' => '0.001'
+                ]
+            ],
+            'ml' => [
+                [
+                    'reference_unit' => 'l',
+                    'conversion_rate' => '1000'
+                ]
+            ],
+            'm' => [
+                [
+                    'reference_unit' => 'cm',
+                    'conversion_rate' => '0.01'
+                ],
+                [
+                    'reference_unit' => 'mm',
+                    'conversion_rate' => '0.001'
+                ]
+            ],
+            'cm' => [
+                [
+                    'reference_unit' => 'm',
+                    'conversion_rate' => '100'
+                ],
+                [
+                    'reference_unit' => 'mm',
+                    'conversion_rate' => '0.001'
+                ]
+            ],
+            'mm' => [
+                [
+                    'reference_unit' => 'm',
+                    'conversion_rate' => '1000'
+                ],
+                [
+                    'reference_unit' => 'cm',
+                    'conversion_rate' => '10'
+                ]
+            ],
+        ];
+
+    /**
      * @var EavSetupFactory
      */
     public $eavSetupFactory;
@@ -62,13 +142,17 @@ class UpgradeData implements UpgradeDataInterface
         ProductAttributeOptionManagementInterface $productAttributeOptionManagementInterface,
         ResourceConfig $configResource,
         SerializerInterface $serializer,
-        ScopeConfigInterface $scopeConfig
+        ScopeConfigInterface $scopeConfig,
+        EavConfig $eavConfig,
+        AttributeRepositoryInterface $attributeRepository
     ) {
         $this->eavSetupFactory = $eavSetupFactory;
         $this->productAttributeOptionManagementInterface = $productAttributeOptionManagementInterface;
         $this->configResource = $configResource;
         $this->serializer = $serializer;
         $this->scopeConfig = $scopeConfig;
+        $this->eavConfig = $eavConfig;
+        $this->attributeRepository = $attributeRepository;
     }
 
     /**
@@ -78,6 +162,7 @@ class UpgradeData implements UpgradeDataInterface
      * @param ModuleContextInterface $context
      *
      * @throws \Magento\Framework\Exception\InputException
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      * @throws \Magento\Framework\Exception\StateException
      */
     public function upgrade(ModuleDataSetupInterface $setup, ModuleContextInterface $context)
@@ -125,6 +210,7 @@ class UpgradeData implements UpgradeDataInterface
             ];
 
             $this->addOption($eavSetup, $options);
+            $this->eavConfig->clear();
             $this->addToSystemConfiguration($dataTemplate);
         }
         $setup->endSetup();
@@ -168,8 +254,15 @@ class UpgradeData implements UpgradeDataInterface
             $referenceUnitOptions[$option->getLabel()] = $option->getValue();
         }
 
+        //Config value is not available during first installation -> maybe config cache
+        if (is_null($this->scopeConfig->getValue(Data::CONVERSION_CONFIG_PATH))) {
+            $data = [];
+            $dataTemplate = array_merge_recursive(self::DEFAULT_DATA_TEMPLATE, $dataTemplate);
+        } else {
+            $data = $this->serializer->unserialize($this->scopeConfig->getValue(Data::CONVERSION_CONFIG_PATH));
+        }
+
         // iterate over attribute options in order to replace labels with option ids
-        $data = $this->serializer->unserialize($this->scopeConfig->getValue(Data::CONVERSION_CONFIG_PATH));
         foreach ($dataTemplate as $unit => $unitData) {
             foreach ($unitData as $key => $unitDataEntry) {
                 $data[] = [
