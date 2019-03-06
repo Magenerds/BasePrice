@@ -34,14 +34,14 @@ class AfterPrice extends \Magento\Framework\View\Element\Template
     protected $_helper;
 
     /**
-     * @var \Magento\Catalog\Model\Product
-     */
-    protected $_product;
-
-    /**
      * @var string
      */
     protected $_configurablePricesJson;
+
+    /**
+     * @var \Magento\Framework\Registry
+     */
+    protected $_registry;
 
     /**
      * Constructor
@@ -56,12 +56,12 @@ class AfterPrice extends \Magento\Framework\View\Element\Template
 	public function __construct(
 		\Magento\Backend\Block\Template\Context $context,
         \Magenerds\BasePrice\Helper\Data $helper,
-        \Magento\Catalog\Model\Product $product,
+        \Magento\Framework\Registry $registry,
 		array $data = []
 	){
         $this->_scopeConfig = $context->getScopeConfig();
         $this->_helper = $helper;
-        $this->_product = $product;
+        $this->_registry = $registry;
 		parent::__construct($context, $data);
 	}
 
@@ -82,6 +82,13 @@ class AfterPrice extends \Magento\Framework\View\Element\Template
         return $moduleEnabled && !empty($productAmount);
     }
 
+    /**
+     * @return bool
+     */
+    public function isConfigurable():bool {
+        return $this->getProduct()->getTypeId() == 'configurable';
+    }
+
 	/**
 	 * Retrieve current product
 	 *
@@ -89,7 +96,7 @@ class AfterPrice extends \Magento\Framework\View\Element\Template
 	 */
 	public function getProduct()
 	{
-        return $this->_product;
+        return $this->_registry->registry('current_product');
 	}
 
     /**
