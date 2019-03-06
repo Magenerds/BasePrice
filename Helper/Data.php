@@ -91,6 +91,13 @@ class Data extends AbstractHelper
         return 1;
     }
 
+    private function getBasepriceLayoutTemplate(): string {
+        return $this->scopeConfig->getValue(
+            'baseprice/general/template',
+            ScopeInterface::SCOPE_STORE
+        );
+    }
+
     /**
      * Returns the base price text according to the configured template
      *
@@ -99,11 +106,6 @@ class Data extends AbstractHelper
      */
     public function getBasePriceText(Product $product)
     {
-        $template = $this->scopeConfig->getValue(
-            'baseprice/general/template',
-            ScopeInterface::SCOPE_STORE
-        );
-
         $basePrice = $this->getBasePrice($product);
 
         if (!$basePrice) return '';
@@ -111,8 +113,59 @@ class Data extends AbstractHelper
         return str_replace(
             '{REF_UNIT}', $this->getReferenceUnit($product), str_replace(
             '{REF_AMOUNT}', $this->getReferenceAmount($product), str_replace(
-                '{BASE_PRICE}', $this->priceHelper->currency($basePrice), $template)
+                '{BASE_PRICE}', $this->priceHelper->currency($basePrice), $this->getBasepriceLayoutTemplate())
         ));
+    }
+
+    /**
+     * Returns an array with the base prices for all tier prices. Uses the tier price id as index.
+     * @param Product $product
+     *
+     * @return array
+     */
+    public function getTierBasePricesText(Product $product):array
+    {
+        $tierPricesTexts = [];
+        foreach ($product->getTierPrice() as $tier) {
+            $basePrice = $this->getBasePrice($product, $tier['price']);
+
+            if (!$basePrice) continue;
+
+            $tierPricesTexts[$tier['price_id']] = str_replace(
+                '{REF_UNIT}', $this->getReferenceUnit($product), str_replace(
+                '{REF_AMOUNT}', $this->getReferenceAmount($product), str_replace(
+                    '{BASE_PRICE}', $this->priceHelper->currency($basePrice), $this->getBasepriceLayoutTemplate())
+            ));
+        }
+
+        return $tierPricesTexts;
+    }
+
+    /**
+     * Returns the base price for a tier price by its ID.
+     * @param Product $product
+     * @param int $tierPriceID
+     *
+     * @return string
+     */
+    public function getTierBasePriceText(Product $product, int $tierPriceID): string
+    {
+        foreach ($product->getTierPrice() as $tier) {
+            if( (int) $tier['price_id'] === $tierPriceID) {
+                $basePrice = $this->getBasePrice($product, $tier['price']);
+
+                if ( ! $basePrice) {
+                    break;
+                }
+
+                return str_replace(
+                    '{REF_UNIT}', $this->getReferenceUnit($product), str_replace(
+                    '{REF_AMOUNT}', $this->getReferenceAmount($product), str_replace(
+                        '{BASE_PRICE}', $this->priceHelper->currency($basePrice), $this->getBasepriceLayoutTemplate())
+                ));
+            }
+        }
+        return '';
     }
 
     /**
@@ -122,7 +175,7 @@ class Data extends AbstractHelper
      */
     public function getReferenceUnit(Product $product)
     {
-        return $product->getAttributeText('baseprice_reference_unit');
+        return __($product->getAttributeText('baseprice_reference_unit'));
     }
 
     /**
@@ -137,12 +190,19 @@ class Data extends AbstractHelper
 
     /**
      * Calculates the base price for given product
+     * @param Product $product
+     * @param float $amount Optional amount. Used to calculate the tier prices.
      *
-     * @return float|string
+     * @return float
      */
-    public function getBasePrice(Product $product)
+    public function getBasePrice(Product $product, float $amount = 0)
     {
-        $productPrice = round($product->getPriceInfo()->getPrice('final_price')->getAmount()->getValue(), PriceCurrencyInterface::DEFAULT_PRECISION);
+        $price = $amount;
+        if($amount == 0) {
+            $price = $product->getPriceInfo()->getPrice('final_price')->getAmount()->getValue();
+        }
+
+        $productPrice = round($price, PriceCurrencyInterface::DEFAULT_PRECISION);
         $conversion = $this->getConversion($product);
         $referenceAmount = $product->getData('baseprice_reference_amount');
         $productAmount = $product->getData('baseprice_product_amount');
@@ -152,6 +212,6 @@ class Data extends AbstractHelper
             $basePrice = $productPrice * $conversion * $referenceAmount / $productAmount;
         }
 
-        return $basePrice;
+        return (float) $basePrice;
     }
 }
