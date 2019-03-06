@@ -122,7 +122,7 @@ class Data extends AbstractHelper
      */
     public function getReferenceUnit(Product $product)
     {
-        return __($product->getAttributeText('baseprice_reference_unit'));
+        return $product->getAttributeText('baseprice_reference_unit');
     }
 
     /**
