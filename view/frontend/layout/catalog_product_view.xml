@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Open Software License (OSL 3.0)
+ * that is available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/osl-3.0.php
+ */
+
+/**
+ * @category   Magenerds
+ * @package    Magenerds_GermanLaw
+ * @subpackage view
+ * @author     Konrad Langenberg <k.langenberg@imi.de>
+ * @copyright  Copyright (c) 2019 TechDivision GmbH (http://www.techdivision.com)
+ * @link       http://www.techdivision.com/
+ */
+ -->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../../../../lib/internal/Magento/Framework/View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="product.info.price">
+            <block after="product.price.final" class="Magenerds\BasePrice\Block\AfterPrice" name="price.final.base" as="price.final.base"
+                   template="Magenerds_BasePrice::afterprice.phtml"/>
+        </referenceContainer>
+    </body>
+</page>
