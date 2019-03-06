@@ -75,6 +75,10 @@ class AfterPrice extends \Magento\Framework\View\Element\Template
      */
     public function hasChildWithBasePrice(): bool {
 
+        if(!$this->isConfigurable()) {
+            return false;
+        }
+
         foreach ($this->getProduct()->getTypeInstance()->getUsedProducts($this->getProduct()) as $child) {
             if(!empty($child->getData('baseprice_product_amount'))) {
                 return true;
