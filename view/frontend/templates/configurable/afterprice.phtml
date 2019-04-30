@@ -25,7 +25,7 @@
         <?php echo $block->getBasePrice() ?>
     </div>
     <script type="text/javascript">
-        require(['jquery', 'jquery/ui', 'domReady!'], function($) {
+        require(['jquery', 'jquery/ui', 'domReady!', 'Magento_Swatches/js/swatch-renderer'], function($) {
             $('body').on('updatePrice', function (e, data) {
 
                 var swatchWidget = $('.swatch-opt').data('mage-SwatchRenderer');
