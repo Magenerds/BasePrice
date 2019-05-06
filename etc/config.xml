@@ -13,8 +13,8 @@
  * @package    Magenerds_BasePrice
  * @subpackage etc
  * @author     Florian Sydekum <f.sydekum@techdivision.com>
- * @copyright  Copyright (c) 2017 TechDivision GmbH (http://www.techdivision.com)
- * @link       http://www.techdivision.com/
+ * @copyright  Copyright (c) 2019 TechDivision GmbH (https://www.techdivision.com)
+ * @link       https://www.techdivision.com/
  */
  -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">

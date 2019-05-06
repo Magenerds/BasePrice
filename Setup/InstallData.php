@@ -11,8 +11,8 @@
  * @category   Magenerds
  * @package    Magenerds_BasePrice
  * @subpackage Setup
- * @copyright  Copyright (c) 2017 TechDivision GmbH (http://www.techdivision.com)
- * @link       http://www.techdivision.com/
+ * @copyright  Copyright (c) 2019 TechDivision GmbH (https://www.techdivision.com)
+ * @link       https://www.techdivision.com/
  * @author     Florian Sydekum <f.sydekum@techdivision.com>
  */
 namespace Magenerds\BasePrice\Setup;
