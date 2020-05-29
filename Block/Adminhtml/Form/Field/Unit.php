@@ -61,8 +61,11 @@ class Unit extends \Magento\Framework\View\Element\Html\Select
     {
         if (!$this->getOptions()) {
             $this->addOption('', __('-- Select value --'));
-            foreach ($this->_productAttributeOptionManagementInterface->getItems($this->_attributeCode) as $item) {
-                $this->addOption($item->getValue(), $item->getLabel());
+            foreach ($this->_eavConfig->getAttribute('catalog_product', 'baseprice_product_unit')->getSource()->getAllOptions() as $item) {
+                if (empty($item['value']) || empty($item['label'])) {
+                    continue;
+                }
+                $this->addOption($item['value'], $item['label']);
             }
         }
         return parent::_toHtml();
