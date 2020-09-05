@@ -40,7 +40,7 @@ class Grouped extends CoreGrouped
                 $product
             )->addAttributeToSelect(
                 [
-                    'name', 'price',  'special_price', 'special_from_date', 'special_to_date',
+                    'name', 'price', 'special_price', 'special_from_date', 'special_to_date', 'tax_class_id', 'image',
                     'baseprice_reference_amount', 'baseprice_product_amount', 'baseprice_product_unit', 'baseprice_reference_unit', 'baseprice_reference_amount'
                 ]
             )->addFilterByRequiredOptions()->setPositionOrder()->addStoreFilter(
