@@ -66,6 +66,29 @@ class AfterPrice extends \Magento\Framework\View\Element\Template
 	}
 
     /**
+     * Loops through all childs and returns true if at least one of the childs has a base price amount set.
+     * This extra check is needed to fix a bug where the html tag was not created if the parent product
+     * didn't have a product amount configured but one of the childs did. This resulted in the base price not
+     * showing at all because the js didn't have a container to add the base price into.
+     *
+     * @return bool
+     */
+    public function hasChildWithBasePrice(): bool {
+
+        if(!$this->isConfigurable()) {
+            return false;
+        }
+
+        foreach ($this->getProduct()->getTypeInstance()->getUsedProducts($this->getProduct()) as $child) {
+            if(!empty($child->getData('baseprice_product_amount'))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Returns the configuration if module is enabled
      *
      * @return mixed
@@ -79,7 +102,7 @@ class AfterPrice extends \Magento\Framework\View\Element\Template
 
         $productAmount = $this->getProduct()->getData('baseprice_product_amount');
 
-        return $moduleEnabled && !empty($productAmount);
+        return $moduleEnabled && (!empty($productAmount) || $this->hasChildWithBasePrice());
     }
 
 	/**
