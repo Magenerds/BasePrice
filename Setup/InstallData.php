@@ -243,7 +243,7 @@ class InstallData implements InstallDataInterface
                 ],
                 [
                     'reference_unit' => 'mm',
-                    'conversion_rate' => '0.001'
+                    'conversion_rate' => '0.1'
                 ]
             ],
             'mm' => [
